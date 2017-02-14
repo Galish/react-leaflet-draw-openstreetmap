@@ -10,7 +10,8 @@ class App extends React.Component {
 		this.map = null
 		this.state = {
 			search: [],
-			selected: {}
+			selected: {},
+			query: ''
 		}
 	}
 
@@ -20,9 +21,11 @@ class App extends React.Component {
 
 	onSubmit = (e) => {
 		e.preventDefault()
-		const {value} = this.refs.input
+		const {query} = this.state
 
-		actions.onSearch(value).end((err, res) => {
+		if (!query) return
+
+		actions.onSearch(query).end((err, res) => {
 			if (err) {
 				return console.log(err);
 			}
@@ -37,6 +40,14 @@ class App extends React.Component {
 		})
 		console.log({selected});
 		this.renderObjectOnMap(selected)
+	}
+
+	onTextChange = (e) => {
+		const {value} = e.target
+		this.setState({
+			query: value,
+			search: []
+		})
 	}
 
 	renderSearchResults = () => {
@@ -113,6 +124,8 @@ class App extends React.Component {
 	}
 
 	render () {
+		const {query} = this.state
+
 		return (
 			<div className="search">
 				<form className="search__form"
@@ -120,11 +133,11 @@ class App extends React.Component {
 					<label className="search__label">
 						Search:
 					</label>
-					<input  className="search__input"
-						defaultValue=""
+					<input className="search__input"
+						onChange={this.onTextChange}
 						placeholder="Search..."
-						ref="input"
-						type="text" />
+						type="text"
+						value={query} />
 					<input type="submit"
 						className="search__submit"
 						value="..." />

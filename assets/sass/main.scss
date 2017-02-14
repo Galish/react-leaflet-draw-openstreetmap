@@ -41,6 +41,7 @@ body {
 		background: #ebebeb;
 		border-radius: $radius;
 		border: none;
+		outline: none;
 	}
 	&__results {
 		max-height: 300px;
@@ -89,5 +90,7 @@ body {
 		right: 0;
 		bottom: 10px;
 		background: #fff;
+		border-top: 1px solid #fff;
+		border-bottom: 1px solid #fff;
 	}
 }
