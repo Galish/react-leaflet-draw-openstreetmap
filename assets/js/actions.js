@@ -1,5 +1,5 @@
 import request from 'superagent'
-const SERVER_URI = 'http://nominatim.openstreetmap.org'
+const SERVER_URI = 'https://nominatim.openstreetmap.org'
 
 export default {
 	onSearch(value) {
