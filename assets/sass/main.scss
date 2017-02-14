@@ -1,13 +1,11 @@
 @import url('https://fonts.googleapis.com/css?family=Ubuntu:300,400&subset=cyrillic-ext');
-
-$font-regular: 400;
-$font-light: 300;
-$radius: 3px;
+@import "variables.scss";
+@import "spinner.scss";
 
 * {margin: 0; padding: 0;}
 body {
 	font-family: 'Ubuntu', sans-serif;
-	background: #20b5e1;
+	background: $blue;
 	font-weight: $font-light;
 	padding: 0;
 }
