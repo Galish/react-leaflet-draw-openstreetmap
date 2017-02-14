@@ -3,7 +3,18 @@ React-Leaflet-Openstreetmap
 
 Research integration with nominatim.openstreetmap.org
 
-### How to run the application
+### Live demo
+
+https://galish.github.io/react-leaflet-openstreetmap/
+
+### How to build the app
+
+```
+npm i
+npm run build
+```
+
+### How to run the app
 
 ```
 npm i
