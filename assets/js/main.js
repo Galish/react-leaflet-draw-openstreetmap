@@ -41,6 +41,7 @@ class App extends React.Component {
 
 	renderSearchResults = () => {
 		const {search} = this.state
+		if (!search.length) return
 
 		return (
 			<div className="search__results">
@@ -51,6 +52,24 @@ class App extends React.Component {
 						{item.display_name}
 					</div>
 				)}
+			</div>
+		)
+	}
+
+	renderDetails = () => {
+		const {selected} = this.state
+
+		if (isEmpty(selected)) return
+
+		return (
+			<div className="search__details">
+				<div className="search__details-bg">
+					{selected.display_name}
+					<p>Class: {selected.class}</p>
+					<p>Type: {selected.type}</p>
+					<p>Lat/Lon: {selected.lat}/{selected.lon}</p>
+					<p>geoJSON type: {selected.geojson.type}</p>
+				</div>
 			</div>
 		)
 	}
@@ -98,10 +117,20 @@ class App extends React.Component {
 			<div className="search">
 				<form className="search__form"
 					onSubmit={this.onSubmit}>
-					<label>Search:</label>
-					<input type="text" ref="input" defaultValue="" />
+					<label className="search__label">
+						Search:
+					</label>
+					<input  className="search__input"
+						defaultValue=""
+						placeholder="Search..."
+						ref="input"
+						type="text" />
+					<input type="submit"
+						className="search__submit"
+						value="..." />
+					{this.renderSearchResults()}
 				</form>
-				{this.renderSearchResults()}
+				{this.renderDetails()}
 				{this.renderMap()}
 			</div>
 		)

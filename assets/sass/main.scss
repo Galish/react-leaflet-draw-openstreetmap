@@ -1,24 +1,93 @@
+@import url('https://fonts.googleapis.com/css?family=Ubuntu:300,400&subset=cyrillic-ext');
+
+$font-regular: 400;
+$font-light: 300;
+$radius: 3px;
+
 * {margin: 0; padding: 0;}
 body {
-	background: white;
-	padding: 20px;
+	font-family: 'Ubuntu', sans-serif;
+	background: #20b5e1;
+	font-weight: $font-light;
+	padding: 0;
 }
 
 .search {
 	&__form {
-		margin-bottom: 20px;
+		max-width: 600px;
+		margin: auto;
+		position: relative;
+		padding: 15px 22px 15px 10px;
+	}
+	&__label {
+		display: none;
+	}
+	&__input {
+		height: 30px;
+		width: 100%;
+		font-size: 15px;
+		background: #fff;
+		border: none;
+		outline: none;
+		border-radius: $radius;
+		padding: 5px;
+	}
+	&__submit {
+		height: 34px;
+		width: 34px;
+		position: absolute;
+		right: 15px;
+		top: 18px;
+		background: #ebebeb;
+		border-radius: $radius;
+		border: none;
 	}
 	&__results {
-
+		max-height: 300px;
+		font-size: .9em;
+		position: absolute;
+		z-index: 2;
+		left: 10px;
+		top: 52px;
+		right: 12px;
+		overflow-y: auto;
 	}
 	&__item {
 		cursor: pointer;
-		border: 1px solid green;
+		margin-bottom: 1px;
+		background: rgba(255, 255, 255, .9);
 		padding: 5px;
+		&:last-child {
+			margin-bottom: 0;
+		}
+	}
+	&__details {
+		position: absolute;
+		z-index: 2;
+		left: 0;
+		bottom: 10px;
+		right: 0;
+		padding: 10px;
+		&-bg {
+			display: inline-block;
+			background: rgba(255, 255, 255, .9);
+			padding: 10px;
+		}
+		p {
+			font-size: .85em;
+			padding-top: 5px;
+			&:first-of-type {
+				padding-top: 10px;
+			}
+		}
 	}
 	&__map {
-		height: 500px;
-		width: 500px;
-		border: 1px solid red;
+		position: absolute;
+		z-index: 1;
+		left: 0;
+		top: 70px;
+		right: 0;
+		bottom: 10px;
+		background: #fff;
 	}
 }

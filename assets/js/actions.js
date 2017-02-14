@@ -7,10 +7,8 @@ export default {
 			.query({
 				format: 'json',
 				addressdetails: 1,
-				limit: 10,
-				//polygon_svg: 1,
-				polygon_geojson: 1,
-				//polygon_text: 1
+				limit: 20,
+				polygon_geojson: 1
 			})
 	}
 }
