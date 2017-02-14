@@ -1,0 +1,24 @@
+* {margin: 0; padding: 0;}
+body {
+	background: white;
+	padding: 20px;
+}
+
+.search {
+	&__form {
+		margin-bottom: 20px;
+	}
+	&__results {
+
+	}
+	&__item {
+		cursor: pointer;
+		border: 1px solid green;
+		padding: 5px;
+	}
+	&__map {
+		height: 500px;
+		width: 500px;
+		border: 1px solid red;
+	}
+}

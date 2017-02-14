@@ -1,0 +1,33 @@
+{
+  "name": "nominatim",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "NODE_ENV=development gulp",
+    "build": "NODE_ENV=production gulp build sass",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "babel-plugin-transform-class-properties": "^6.22.0",
+    "babel-preset-es2015": "^6.22.0",
+    "babelify": "^7.3.0",
+    "browserify": "^14.0.0",
+    "gulp": "^3.9.1",
+    "gulp-connect": "^5.0.0",
+    "gulp-csso": "^2.0.0",
+    "gulp-sass": "^3.1.0",
+    "gulp-sourcemaps": "^2.4.1",
+    "gulp-streamify": "^1.0.2",
+    "gulp-uglify": "^2.0.1",
+    "gulp-util": "^3.0.8",
+    "leaflet": "^1.0.3",
+    "lodash.isempty": "^4.4.0",
+    "react": "^15.4.2",
+    "react-dom": "^15.4.2",
+    "superagent": "^3.4.1",
+    "vinyl-source-stream": "^1.1.0"
+  }
+}
