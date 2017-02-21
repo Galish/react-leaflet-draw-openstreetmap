@@ -8,7 +8,7 @@ export default {
 				format: 'json',
 				addressdetails: 1,
 				'accept-language': 'en',
-				limit: 20,
+				//limit: 20,
 				polygon_geojson: 1
 			})
 	}

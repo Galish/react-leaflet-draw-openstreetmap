@@ -3,13 +3,15 @@ import ReactDOM from 'react-dom'
 import actions from './actions'
 import isEmpty from 'lodash.isempty'
 import 'leaflet'
+import 'leaflet-draw'
 
 class App extends React.Component {
 	constructor(props, context) {
 		super(props, context)
 		this.map = null
 		this.state = {
-			search: [],
+			canSave: false,
+			search: null,
 			selected: {},
 			query: '',
 			isLoading: false
@@ -23,6 +25,7 @@ class App extends React.Component {
 	onSubmit = (e) => {
 		e.preventDefault()
 		const {query, isLoading} = this.state
+		const types = ['Polygon', 'MultiPolygon']
 
 		if (!query || isLoading) return
 
@@ -33,7 +36,7 @@ class App extends React.Component {
 				return console.log(err);
 			}
 			this.setState({
-				search: res.body,
+				search: res.body.filter(item => types.includes(item.geojson.type)),
 				isLoading: false
 			})
 		})
@@ -42,11 +45,12 @@ class App extends React.Component {
 	onSelect = (selected) => {
 		const {query} = this.state
 		this.setState({
+			canSave: true,
 			selected,
-			search: []
+			search: null
 		})
 		console.log('QUERY: ', query)
-		console.log('RESUL: ', selected)
+		console.log('RESULT: ', selected)
 		console.log('=====')
 		this.renderObjectOnMap(selected)
 	}
@@ -55,8 +59,16 @@ class App extends React.Component {
 		const {value} = e.target
 		this.setState({
 			query: value,
-			search: []
+			search: null
 		})
+	}
+
+	onSaveLocation = () => {
+		const polygons = []
+
+		this.featureGroup.eachLayer(layer => polygons.push(layer.toGeoJSON().geometry.coordinates))
+
+		polygons.length && console.log('POLYGON: ', polygons)
 	}
 
 	renderSearchForm = () => {
@@ -83,17 +95,22 @@ class App extends React.Component {
 
 	renderSearchResults = () => {
 		const {search} = this.state
-		if (!search.length) return
+		if (!search) return
 
 		return (
 			<div className="search__results">
-				{search.map(item =>
-					<div className="search__item"
-						key={item.place_id}
-						onClick={this.onSelect.bind(this, item)}>
-						{item.display_name}
+				{search.length
+					? search.map(item =>
+						<div className="search__item"
+							key={item.place_id}
+							onClick={this.onSelect.bind(this, item)}>
+							{item.display_name}
+						</div>
+					)
+					: <div className="search__item">
+						Nothing was found
 					</div>
-				)}
+				}
 			</div>
 		)
 	}
@@ -118,6 +135,16 @@ class App extends React.Component {
 
 	initMap = () => {
 		this.map = L.map('map').setView([51.505, -0.09], 13)
+		this.featureGroup = L.featureGroup().addTo(this.map)
+		this.drawControl = new L.Control.Draw({
+			draw: {
+				polygon: true,
+				polyline: false,
+				rectangle: false,
+				circle: false,
+				marker: false
+			}
+		}).addTo(this.map)
 
 		L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png', {
 			maxZoom: 18,
@@ -125,7 +152,16 @@ class App extends React.Component {
 				'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
 				'Imagery © <a href="http://mapbox.com">Mapbox</a>',
 			id: 'mapbox.streets'
-		}).addTo(this.map);
+		}).addTo(this.map)
+
+		this.map.on('draw:created', (e) => {
+			this.setState({canSave: true})
+			this.featureGroup.addLayer(e.layer)
+		})
+		this.map.on('draw:drawstart', (e) => {
+			this.setState({canSave: false})
+			this.featureGroup.clearLayers()
+		})
 	}
 
 	renderObjectOnMap = (obj) => {
@@ -135,16 +171,27 @@ class App extends React.Component {
 			[boundingbox[1], boundingbox[3]]
 		]
 
-		this.map.fitBounds(bounds);
+		this.map.fitBounds(bounds)
+		this.setState({canSave: true})
+		this.featureGroup.clearLayers()
 
 		if (!isEmpty(geojson)) {
-			var myStyle = {
-				"color": "#20b5e1",
-				"weight": 2,
-				"opacity": 0.9
+			const myStyle = {
+				"color": "#3388ff",
+				"weight": 4,
+				"opacity": 0.5
 			}
 
-			L.geoJSON([geojson], {style: myStyle}).addTo(this.map);
+			// 1. render in featureGroup
+			L.geoJson(geojson, {
+				style: myStyle,
+				onEachFeature: (feature, layer) => {
+					this.featureGroup.addLayer(layer)
+				}
+			})
+
+			// 2. render as geoJSON layer
+			//L.geoJSON([geojson], {style: myStyle}).addTo(this.map);
 		}
 	}
 
@@ -170,9 +217,22 @@ class App extends React.Component {
 		)
 	}
 
+	renderSaveButton = () => {
+		const {canSave} = this.state
+		if (!canSave) return null
+
+		return (
+			<button className="search__save"
+				onClick={this.onSaveLocation}>
+				Save
+			</button>
+		)
+	}
+
 	render () {
 		return (
 			<div className="search">
+				{this.renderSaveButton()}
 				{this.renderSearchForm()}
 				{this.renderDetails()}
 				{this.renderMap()}
