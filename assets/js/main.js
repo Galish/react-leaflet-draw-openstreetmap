@@ -35,8 +35,22 @@ class App extends React.Component {
 			if (err) {
 				return console.log(err);
 			}
+			const search = res.body.filter(item => types.includes(item.geojson.type))
+				.filter((item, index, self) => {
+					const copies = self.filter(i => i.display_name === item.display_name)
+					const hasBoundary = copies.some(i => i.class === 'boundary')
+					const hasPlace = copies.some(i => i.class === 'place')
+
+					return copies.length > 1
+						? (hasBoundary && item.class === 'boundary' ||
+							!hasBoundary && hasPlace && item.class === 'place' ||
+							!hasBoundary && !hasPlace && item.osm_type === copies[0].osm_type)
+							? true
+							: false
+						: true
+				})
 			this.setState({
-				search: res.body.filter(item => types.includes(item.geojson.type)),
+				search,
 				isLoading: false
 			})
 		})
@@ -96,7 +110,7 @@ class App extends React.Component {
 	renderSearchResults = () => {
 		const {search} = this.state
 		if (!search) return
-
+console.log('Search results: ', search)
 		return (
 			<div className="search__results">
 				{search.length
