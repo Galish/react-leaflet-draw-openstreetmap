@@ -157,6 +157,12 @@ console.log('Search results: ', search)
 				rectangle: false,
 				circle: false,
 				marker: false
+			},
+			edit: {
+				featureGroup: this.featureGroup,
+				// poly: {
+				// 	allowIntersection: false
+				// }
 			}
 		}).addTo(this.map)
 
