@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import actions from './actions'
 import isEmpty from 'lodash.isempty'
+import simplify from './simplify'
 import 'leaflet'
 import 'leaflet-draw'
 
@@ -14,12 +15,19 @@ class App extends React.Component {
 			search: null,
 			selected: {},
 			query: '',
-			isLoading: false
+			isLoading: false,
+			simplify: false
 		}
 	}
 
 	componentDidMount() {
 		this.initMap()
+	}
+
+	componentDidUpdate(nextProps, nextState) {
+		if (this.state.selected && nextState.simplify !== this.state.simplify) {
+			this.renderObjectOnMap(this.state.selected)
+		}
 	}
 
 	onSubmit = (e) => {
@@ -184,6 +192,12 @@ console.log('Search results: ', search)
 		})
 	}
 
+	simplify = (geojson) => {
+		const simplifiedCoords = simplify(geojson.coordinates[0], 0.001, false)
+		console.log('Simplified: ', geojson.coordinates[0].length, '->', simplifiedCoords.length)
+		return Object.assign({}, geojson, {coordinates: [simplifiedCoords]})
+	}
+
 	renderObjectOnMap = (obj) => {
 		const {boundingbox, geojson, lat, lon} = obj
 		const bounds = [
@@ -195,7 +209,11 @@ console.log('Search results: ', search)
 		this.setState({canSave: true})
 		this.featureGroup.clearLayers()
 
-		if (!isEmpty(geojson)) {
+		const geoJsonObject = this.state.simplify && geojson.coordinates[0].length > 30
+			? this.simplify(geojson)
+			: geojson
+
+		if (!isEmpty(geoJsonObject)) {
 			const myStyle = {
 				"color": "#3388ff",
 				"weight": 4,
@@ -203,7 +221,7 @@ console.log('Search results: ', search)
 			}
 
 			// 1. render in featureGroup
-			L.geoJson(geojson, {
+			L.geoJson(geoJsonObject, {
 				style: myStyle,
 				onEachFeature: (feature, layer) => {
 					this.featureGroup.addLayer(layer)
@@ -237,22 +255,26 @@ console.log('Search results: ', search)
 		)
 	}
 
-	renderSaveButton = () => {
-		const {canSave} = this.state
-		if (!canSave) return null
-
-		return (
-			<button className="search__save"
-				onClick={this.onSaveLocation}>
-				Save
+	renderButtons = () =>
+		<div className="search__buttons">
+			<button className="search__button"
+				onClick={() => {
+					this.setState({simplify: !this.state.simplify})
+				}}>
+				{`Simplify: ${this.state.simplify ? 'on': 'off'}`}
 			</button>
-		)
-	}
+			{this.state.canSave && (
+				<button className="search__button"
+					onClick={this.onSaveLocation}>
+					Save
+				</button>
+			)}
+		</div>
 
 	render () {
 		return (
 			<div className="search">
-				{this.renderSaveButton()}
+				{this.renderButtons()}
 				{this.renderSearchForm()}
 				{this.renderDetails()}
 				{this.renderMap()}

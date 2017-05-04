@@ -22,18 +22,25 @@ body {
 		position: relative;
 		padding: 15px 22px 15px 10px;
 	}
-	&__save {
-		font-size: 14px;
-		cursor: pointer;
+	&__buttons {
 		position: absolute;
 		z-index: 10;
 		right: 10px;
 		bottom: 30px;
+	}
+	&__button {
+		font-size: 14px;
+		float: left;
+		cursor: pointer;
 		background: #ebebeb;
 		border-radius: $radius;
 		border: 1px solid #999;
 		outline: none;
+		margin-left: 10px;
 		padding: 10px 20px;
+		&:first-of-type {
+			margin-left: 0;
+		}
 	}
 	&__label {
 		display: none;
