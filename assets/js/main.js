@@ -192,14 +192,27 @@ console.log('Search results: ', search)
 		})
 	}
 
-	simplify = (geojson) => {
-		const simplifiedCoords = simplify(geojson.coordinates[0], 0.001, false)
-		console.log('Simplified: ', geojson.coordinates[0].length, '->', simplifiedCoords.length)
+	simplify = (geojson, coordinates, tolerance) => {
+		const simplifiedCoords = simplify(coordinates, tolerance, false)
+		console.log('Simplified: ', coordinates.length, '->', simplifiedCoords.length)
 		return Object.assign({}, geojson, {coordinates: [simplifiedCoords]})
+	}
+
+	getDistance = (points) => {
+		let distance = 0
+		for (var i = 0; i < points.length - 1; i++) {
+			distance += this.twoPointsDistance(points[i], points[i + 1])
+		}
+		return distance
+	}
+
+	twoPointsDistance = (point1, point2) => {
+		return Math.sqrt(Math.pow(point1[0] - point2[0], 2) + Math.pow(point1[1] - point2[1], 2))
 	}
 
 	renderObjectOnMap = (obj) => {
 		const {boundingbox, geojson, lat, lon} = obj
+		const {coordinates} = geojson
 		const bounds = [
 			[boundingbox[0], boundingbox[2]],
 			[boundingbox[1], boundingbox[3]]
@@ -209,9 +222,8 @@ console.log('Search results: ', search)
 		this.setState({canSave: true})
 		this.featureGroup.clearLayers()
 
-		const geoJsonObject = this.state.simplify && geojson.coordinates[0].length > 30
-			? this.simplify(geojson)
-			: geojson
+		const distance = this.getDistance(coordinates[0])
+		const geoJsonObject =  this.simplify(geojson, coordinates[0], distance/100)
 
 		if (!isEmpty(geoJsonObject)) {
 			const myStyle = {
@@ -261,7 +273,7 @@ console.log('Search results: ', search)
 				onClick={() => {
 					this.setState({simplify: !this.state.simplify})
 				}}>
-				{`Simplify: ${this.state.simplify ? 'on': 'off'}`}
+				{`Simplify: ${this.state.simplify ? 'off': 'on'}`}
 			</button>
 			{this.state.canSave && (
 				<button className="search__button"
