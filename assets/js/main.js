@@ -3,6 +3,11 @@ import ReactDOM from 'react-dom'
 import actions from './actions'
 import isEmpty from 'lodash.isempty'
 import simplify from './simplify'
+
+import explode from 'turf-explode'
+import convex from 'turf-convex'
+import concave from 'turf-concave'
+
 import 'leaflet'
 import 'leaflet-draw'
 
@@ -192,15 +197,54 @@ console.log('Search results: ', search)
 		})
 	}
 
-	simplify = (geojson, coordinates, tolerance) => {
+	simplify = (geojson) => {
+		const coordinates = geojson.coordinates[0]
+		const distance = this.getDistance(coordinates)
+		const tolerance = distance/100
 		const simplifiedCoords = simplify(coordinates, tolerance, false)
 		console.log('Simplified: ', coordinates.length, '->', simplifiedCoords.length)
 		return Object.assign({}, geojson, {coordinates: [simplifiedCoords]})
 	}
 
+	simplifyMultyPolygon = (geojson) => {
+		const {coordinates} = geojson
+		// const flattened = flatten(geojson)
+		// console.log('flattened: ', flattened)
+
+		const updatedCoordinates = coordinates.map(feature => {
+			const flattenCoordinates = this.flatten(feature)
+			//console.log('!!!', feature.length, flattenFeature.length)
+			const simplifiedCoords = simplify(flattenCoordinates, 0.001, false)
+			console.log('-> flattenCoordinates:', flattenCoordinates.length);
+			console.log('-> simplifiedCoords:', simplifiedCoords.length)
+			return [simplifiedCoords]
+		})
+
+		const exploded = explode(geojson)
+		console.log('exploded: ', exploded)
+
+		const convexed = convex(exploded)
+		console.log('convexed:', convexed)
+
+		//var fc = turf.featurecollection(geojson);
+		//var concaved = turf.concave(exploded,  0.5, 'kilometers');
+
+		//const concaved = turf.concave(exploded, 0.001, 'kilometers')
+		//console.log('concaved:', concaved)
+
+		return Object.assign({}, geojson, {
+			coordinates: convexed.geometry.coordinates,
+			type: convexed.geometry.type
+		})
+// console.log('====', {geojson, updatedCoordinates});
+// 		return Object.assign({}, geojson, {
+// 			coordinates: updatedCoordinates
+// 		})
+	}
+
 	getDistance = (points) => {
 		let distance = 0
-		for (var i = 0; i < points.length - 1; i++) {
+		for (let i = 0; i < points.length - 1; i++) {
 			distance += this.twoPointsDistance(points[i], points[i + 1])
 		}
 		return distance
@@ -208,6 +252,18 @@ console.log('Search results: ', search)
 
 	twoPointsDistance = (point1, point2) => {
 		return Math.sqrt(Math.pow(point1[0] - point2[0], 2) + Math.pow(point1[1] - point2[1], 2))
+	}
+
+	flatten = (array) => {
+		const flat = [].concat(...array)
+		return flat.some(arr => !this.isCoordinates(arr)) ? this.flatten(flat) : flat
+	}
+
+	isCoordinates = (arr) => {
+		return Array.isArray(arr) &&
+			arr.length === 2 &&
+			typeof(arr[0]) === 'number' &&
+			typeof(arr[1]) === 'number'
 	}
 
 	renderObjectOnMap = (obj) => {
@@ -222,8 +278,13 @@ console.log('Search results: ', search)
 		this.setState({canSave: true})
 		this.featureGroup.clearLayers()
 
-		const distance = this.getDistance(coordinates[0])
-		const geoJsonObject =  this.simplify(geojson, coordinates[0], distance/100)
+		const geoJsonObject = this.state.simplify
+			? geojson.type === 'MultiPolygon'
+				? this.simplifyMultyPolygon(geojson)
+				: this.simplify(geojson)
+			: geojson
+
+		console.log('geoJsonObject:', geoJsonObject)
 
 		if (!isEmpty(geoJsonObject)) {
 			const myStyle = {
