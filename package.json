@@ -24,15 +24,13 @@
     "gulp-streamify": "^1.0.2",
     "gulp-uglify": "^2.0.1",
     "gulp-util": "^3.0.8",
+    "hull.js": "^0.2.10",
     "leaflet": "^1.0.3",
     "leaflet-draw": "^0.4.9",
     "lodash.isempty": "^4.4.0",
     "react": "^15.4.2",
     "react-dom": "^15.4.2",
     "superagent": "^3.4.1",
-    "turf-concave": "^3.0.12",
-    "turf-convex": "^3.0.12",
-    "turf-explode": "^3.0.12",
     "vinyl-source-stream": "^1.1.0"
   }
 }

@@ -3,10 +3,7 @@ import ReactDOM from 'react-dom'
 import actions from './actions'
 import isEmpty from 'lodash.isempty'
 import simplify from './simplify'
-
-import explode from 'turf-explode'
-import convex from 'turf-convex'
-import concave from 'turf-concave'
+import concave from 'hull.js'
 
 import 'leaflet'
 import 'leaflet-draw'
@@ -207,39 +204,16 @@ console.log('Search results: ', search)
 	}
 
 	simplifyMultyPolygon = (geojson) => {
-		const {coordinates} = geojson
-		// const flattened = flatten(geojson)
-		// console.log('flattened: ', flattened)
+		const CONCAVITY = 0.05
 
-		const updatedCoordinates = coordinates.map(feature => {
-			const flattenCoordinates = this.flatten(feature)
-			//console.log('!!!', feature.length, flattenFeature.length)
-			const simplifiedCoords = simplify(flattenCoordinates, 0.001, false)
-			console.log('-> flattenCoordinates:', flattenCoordinates.length);
-			console.log('-> simplifiedCoords:', simplifiedCoords.length)
-			return [simplifiedCoords]
+		const points = this.flatten(geojson.coordinates)
+		const polygonCoordinates = concave(points, CONCAVITY)
+		const newGeojson = Object.assign({}, geojson, {
+			coordinates: [polygonCoordinates],
+			type: 'Polygon'
 		})
 
-		const exploded = explode(geojson)
-		console.log('exploded: ', exploded)
-
-		const convexed = convex(exploded)
-		console.log('convexed:', convexed)
-
-		//var fc = turf.featurecollection(geojson);
-		//var concaved = turf.concave(exploded,  0.5, 'kilometers');
-
-		//const concaved = turf.concave(exploded, 0.001, 'kilometers')
-		//console.log('concaved:', concaved)
-
-		return Object.assign({}, geojson, {
-			coordinates: convexed.geometry.coordinates,
-			type: convexed.geometry.type
-		})
-// console.log('====', {geojson, updatedCoordinates});
-// 		return Object.assign({}, geojson, {
-// 			coordinates: updatedCoordinates
-// 		})
+		return this.simplify(newGeojson)
 	}
 
 	getDistance = (points) => {
@@ -283,8 +257,6 @@ console.log('Search results: ', search)
 				? this.simplifyMultyPolygon(geojson)
 				: this.simplify(geojson)
 			: geojson
-
-		console.log('geoJsonObject:', geoJsonObject)
 
 		if (!isEmpty(geoJsonObject)) {
 			const myStyle = {
