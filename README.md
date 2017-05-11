@@ -1,7 +1,9 @@
 React-Leaflet-Openstreetmap
 ===================
 
-Research integration with nominatim.openstreetmap.org
+Research integration with nominatim.openstreetmap.org.
+User should be able to draw/edit areas on map from search results.
+For that MultiPolygons are converted to Polygons and coordinates are simplified.
 
 ### Live demo
 
