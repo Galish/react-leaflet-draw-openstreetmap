@@ -4,6 +4,7 @@ import actions from './actions'
 import isEmpty from 'lodash.isempty'
 import simplify from './simplify'
 import concave from 'hull.js'
+import convex from 'turf-convex'
 
 import 'leaflet'
 import 'leaflet-draw'
@@ -203,10 +204,10 @@ console.log('Search results: ', search)
 		})
 	}
 
-	simplify = (geojson) => {
+	simplify = (geojson, kf = 100) => {
 		const coordinates = geojson.coordinates[0]
 		const distance = this.getDistance(coordinates)
-		const tolerance = distance/100
+		const tolerance = distance/kf
 		const simplifiedCoords = simplify(coordinates, tolerance, false)
 		console.log('Simplified: ', coordinates.length, '->', simplifiedCoords.length)
 		return Object.assign({}, geojson, {coordinates: [simplifiedCoords]})
@@ -223,6 +224,28 @@ console.log('Search results: ', search)
 		})
 
 		return this.simplify(newGeojson)
+	}
+
+	convexHull = (geojson) => {
+		const points = this.flatten(geojson.coordinates)
+		const pointsArray = {
+			type: 'FeatureCollection',
+			features: points.map(point => ({
+				type: 'Feature',
+				properties: {},
+				geometry: {
+					type: "Point",
+					coordinates: point
+				}
+			}))
+		}
+		const hull = convex(pointsArray)
+		const newGeojson = Object.assign({}, geojson, {
+			coordinates: hull.geometry.coordinates,
+			type: 'Polygon'
+		})
+
+		return this.simplify(newGeojson, 150)
 	}
 
 	getDistance = (points) => {
@@ -262,9 +285,11 @@ console.log('Search results: ', search)
 		this.featureGroup.clearLayers()
 
 		const geoJsonObject = this.state.simplify
-			? geojson.type === 'MultiPolygon'
-				? this.simplifyMultyPolygon(geojson)
-				: this.simplify(geojson)
+			? this.state.simplify === 'convex'
+				? this.convexHull(geojson)
+				: geojson.type === 'MultiPolygon'
+					? this.simplifyMultyPolygon(geojson)
+					: this.simplify(geojson)
 			: geojson
 
 		if (!isEmpty(geoJsonObject)) {
@@ -313,9 +338,14 @@ console.log('Search results: ', search)
 		<div className="search__buttons">
 			<button className="search__button"
 				onClick={() => {
-					this.setState({simplify: !this.state.simplify})
+					const simplify = this.state.simplify
+						? this.state.simplify === 'concave'
+							? 'convex'
+							: false
+						: 'concave'
+					this.setState({simplify})
 				}}>
-				{`Simplify: ${this.state.simplify ? 'off': 'on'}`}
+				{`Simplify: ${this.state.simplify || 'off'}`}
 			</button>
 			{this.state.canSave && (
 				<button className="search__button"
