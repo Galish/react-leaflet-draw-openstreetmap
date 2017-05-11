@@ -32,6 +32,10 @@ class App extends React.Component {
 		}
 	}
 
+	getAddress = ({city, country, country_code, county}) => {
+		return `${city} ${country} ${country_code} ${county}`
+	}
+
 	onSubmit = (e) => {
 		e.preventDefault()
 		const {query, isLoading} = this.state
@@ -45,9 +49,13 @@ class App extends React.Component {
 			if (err) {
 				return console.log(err);
 			}
-			const search = res.body.filter(item => types.includes(item.geojson.type))
+
+			let search = res.body.filter(item => types.includes(item.geojson.type))
+				.map(item => {
+					return Object.assign({}, item, {addressString: this.getAddress(item.address)})
+				})
 				.filter((item, index, self) => {
-					const copies = self.filter(i => i.display_name === item.display_name)
+					const copies = self.filter(i => i.addressString === item.addressString)
 					const hasBoundary = copies.some(i => i.class === 'boundary')
 					const hasPlace = copies.some(i => i.class === 'place')
 
@@ -59,6 +67,7 @@ class App extends React.Component {
 							: false
 						: true
 				})
+
 			this.setState({
 				search,
 				isLoading: false
