@@ -5,7 +5,7 @@ Research integration with nominatim.openstreetmap.org
 
 ### Live demo
 
-https://galish.github.io/react-leaflet-openstreetmap/
+https://galish.github.io/react-leaflet-draw-openstreetmap/
 
 ### How to build the app
 
